@@ -1,0 +1,141 @@
+<?php
+/**
+ * @file
+ * Main EVE Recruitment module file.
+ */
+ 
+ /**
+ * Return the version number.
+ * 
+ * x.x.x.x
+ * | | | `-- Patch Version Number.
+ * | | |
+ * | | `---- 0 = Alpha.
+ * | |       1 = Beta.
+ * | |       2 = RC.
+ * | |       3 = Release.
+ * | |
+ * | `------ Minor Version Change.
+ * |
+ * `-------- Major Version Change.
+ */
+function eve_recruitment_version() {
+  return '1.0.0.0';
+}
+
+function eve_recruitment_schema() {
+	$schema['eve_recruitment'] = array(
+		'description' => 'Stores names of people to be recruited and dates of recruitment letters.',
+		'fields' => array(
+			'ref_id' => array(
+				'description' => 'Unique ID of the entry.',
+				'type' => 'serial',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
+			),
+			'name' => array(
+				'description' => 'Name of EVE Online character.',
+				'type' => 'varchar',
+				'length' => '64',
+				'not null' => TRUE,
+			),
+			'added_date' => array(
+				'description' => 'Date and time when the name was added.',
+				'type' => 'int',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
+			),
+			'added_by' => array(
+				'description' => 'User ID of the person who added the name.',
+				'type' => 'int',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
+			),
+			'mailed_date' => array(
+				'description' => 'Date and time when the character was mailed.',
+				'type' => 'int',
+				'unsigned' => TRUE,
+				'not null' => FALSE,
+			),
+			'mailed_by' => array(
+				'description' => 'User ID of the person who mailed the character.',
+				'type' => 'int',
+				'unsigned' => TRUE,
+				'not null' => FALSE,
+			),
+		),
+		'primary key' => array('ref_id'),
+		'foreign keys' => array(
+	    'added_by' => array(
+				'table' => 'users',
+				'columns' => array('added_by' => 'uid'),
+			),
+	    'mailed_by' => array(
+				'table' => 'users',
+				'columns' => array('mailed_by' => 'uid'),
+			),
+    ),
+		'indexes' => array(
+			'name' => array('name'),
+			'added_by' => array('added_by'),
+			'mailed_by' => array('mailed_by'),
+		),
+	);
+	return $schema;
+}
+
+function eve_recruitment_menu() {
+  $items = array();
+  $items['recruitment/mailing/names/add'] = array(
+    'title' => t('Add Names to Recruitment Database'),
+    'description' => t('Add names to our recruitment database.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('eve_recruitment_names_add_form'),
+    'access callback' => TRUE
+  );
+  return $items;
+}
+
+function eve_recruitment_names_add_form($form, &$form_state) {
+ $form['names'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Names to be added'),
+		'#description' => t('You can paste the contents of the local chat here.'),
+    '#cols' => 30,
+    '#rows' => 20,
+    '#required' => TRUE,
+  );
+  $form['submit_button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add Names'),
+  );
+  return $form;
+}
+
+function eve_recruitment_names_add_form_submit($form, &$form_state) {
+	global $user;
+	// Sanitize the input
+	$name_list = check_plain($form['names']['#value']);
+	// Split lines or text entries separated by commas into array elements
+	$names = preg_split("/[\r\n,]+/", $name_list, -1, PREG_SPLIT_NO_EMPTY);
+	// Check if names already exist in the database
+	$existing_names = db_select('eve_recruitment','r')
+	->fields('r', array('name'))
+	->condition('name', $names, 'IN')
+	->execute()
+	->fetchCol();
+	// Identify new names
+	$new_names = array_diff($names, $existing_names);
+	// Add new names to the database
+	if (isset($new_names)) {
+		foreach ($new_names as $name) {
+			db_insert('eve_recruitment')->fields(array(
+				'name' => trim($name),
+				'added_date' => REQUEST_TIME,
+				'added_by' => $user->uid,
+			))->execute();	
+		}
+		drupal_set_message(t('Added @new new names to the database. Skipped @old existing names.', 
+			array('@new' => count($new_names), '@old' => count($existing_names))));
+	}
+}
