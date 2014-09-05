@@ -265,7 +265,7 @@ function eve_recruitment_names_mail_form_confirm($form, &$form_state) {
 		drupal_set_message(t('Updated @num_updated names.', 
 			array('@num_updated' => $updated)));
 	}
-	$form_state['redirect'] = 'recruitment/mailing/names/add';
+	$form_state['redirect'] = 'recruitment/summary';
 }
 
 function eve_recruitment_names_mail_form_release($form, &$form_state) {
@@ -282,5 +282,32 @@ function eve_recruitment_names_mail_form_release($form, &$form_state) {
 	if ($updated) {
 		drupal_set_message(t('Lock released from @updated names.', array('@updated' => $updated)));
 	}
-	$form_state['redirect'] = 'recruitment/mailing/names/add';
+	$form_state['redirect'] = 'recruitment/summary';
+}
+
+function eve_recruitment_menu_local_tasks_alter(&$data, $router_item, $root_path) {
+  switch($root_path){
+    case 'recruitment/summary':
+      $item = menu_get_item('recruitment/mailing/names/add');
+      $item['title'] = t('Add names');
+      $data['actions']['output'][] = array(
+        '#theme' => 'menu_local_action',
+        '#link' => $item,
+      );
+      $item = menu_get_item('recruitment/mailing/names/mail');
+      $item['title'] = t('Get names');
+      $data['actions']['output'][] = array(
+        '#theme' => 'menu_local_action',
+        '#link' => $item,
+      );
+			break;
+		case 'recruitment/mailing/names/add':
+      $item = menu_get_item('recruitment/summary');
+      $item['title'] = t('Summary');
+      $data['actions']['output'][] = array(
+        '#theme' => 'menu_local_action',
+        '#link' => $item,
+      );
+			break;
+  }
 }
