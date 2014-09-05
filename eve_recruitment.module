@@ -23,6 +23,12 @@ function eve_recruitment_version() {
   return '1.0.0.0';
 }
 
+function eve_recruitment_views_api() {
+	return array(
+		'api' => 3,
+	);
+}
+
 function eve_recruitment_schema() {
 	$schema['eve_recruitment'] = array(
 		'description' => 'Stores names of people to be recruited and dates of recruitment letters.',
@@ -63,6 +69,25 @@ function eve_recruitment_schema() {
 				'unsigned' => TRUE,
 				'not null' => FALSE,
 			),
+			'lock_time' => array(
+				'description' => 'Temporary lock time of the record to prevent edit conflicts.',
+				'type' => 'int',
+				'unsigned' => TRUE,
+				'not null' => FALSE,
+			),
+			'locked_by' => array(
+				'description' => 'User ID of the person who locked the record.',
+				'type' => 'int',
+				'unsigned' => TRUE,
+				'not null' => FALSE,
+			),
+			'imported' => array(
+				'description' => 'Name originally added by another person to another database and imported from it.',
+				'type' => 'int',
+				'size' => 'tiny',
+				'unsigned' => TRUE,
+				'not null' => FALSE,
+			),
 		),
 		'primary key' => array('ref_id'),
 		'foreign keys' => array(
@@ -79,6 +104,8 @@ function eve_recruitment_schema() {
 			'name' => array('name'),
 			'added_by' => array('added_by'),
 			'mailed_by' => array('mailed_by'),
+			'locked_by' => array('locked_by'),
+			'lock_time' => array('lock_time'),
 		),
 	);
 	return $schema;
@@ -87,20 +114,29 @@ function eve_recruitment_schema() {
 function eve_recruitment_menu() {
   $items = array();
   $items['recruitment/mailing/names/add'] = array(
-    'title' => t('Add Names to Recruitment Database'),
-    'description' => t('Add names to our recruitment database.'),
+    'title' => t('Add Names'),
+    'description' => t('Add names to the recruitment database.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('eve_recruitment_names_add_form'),
+    'access callback' => TRUE
+  );
+  $items['recruitment/mailing/names/mail'] = array(
+    'title' => t('Send Mails'),
+    'description' => t('Send mails to characters in the recruitment database.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('eve_recruitment_names_mail_form'),
     'access callback' => TRUE
   );
   return $items;
 }
 
 function eve_recruitment_names_add_form($form, &$form_state) {
- $form['names'] = array(
+	$desc = t('You can paste names from the local chat into the field below. 
+		A comma-separated list of names from another source will work too.');
+	$form['names'] = array(
     '#type' => 'textarea',
     '#title' => t('Names to be added'),
-		'#description' => t('You can paste the contents of the local chat here.'),
+		'#prefix' => '<p>' . $desc . '</p>',
     '#cols' => 30,
     '#rows' => 20,
     '#required' => TRUE,
@@ -114,19 +150,21 @@ function eve_recruitment_names_add_form($form, &$form_state) {
 
 function eve_recruitment_names_add_form_submit($form, &$form_state) {
 	global $user;
-	// Sanitize the input
+	// Sanitize the input.
 	$name_list = check_plain($form['names']['#value']);
-	// Split lines or text entries separated by commas into array elements
+	// Split lines or text entries separated by commas into array elements.
 	$names = preg_split("/[\r\n,]+/", $name_list, -1, PREG_SPLIT_NO_EMPTY);
-	// Check if names already exist in the database
+	// Remove duplicates.
+	$names = array_unique($names);
+	// Check if names already exist in the database.
 	$existing_names = db_select('eve_recruitment','r')
-	->fields('r', array('name'))
-	->condition('name', $names, 'IN')
-	->execute()
-	->fetchCol();
-	// Identify new names
+		->fields('r', array('name'))
+		->condition('name', $names, 'IN')
+		->execute()
+		->fetchCol();
+	// Identify new names.
 	$new_names = array_diff($names, $existing_names);
-	// Add new names to the database
+	// Add new names to the database.
 	if (isset($new_names)) {
 		foreach ($new_names as $name) {
 			db_insert('eve_recruitment')->fields(array(
@@ -135,7 +173,114 @@ function eve_recruitment_names_add_form_submit($form, &$form_state) {
 				'added_by' => $user->uid,
 			))->execute();	
 		}
-		drupal_set_message(t('Added @new new names to the database. Skipped @old existing names.', 
-			array('@new' => count($new_names), '@old' => count($existing_names))));
+		$added = t('Added @new new names to the database.', array('@new' => count($new_names)));
+		$skipped = '';
+		$count = count($existing_names);
+		if ($count > 0) {
+			$skipped = t('Skipped @old existing names.', array('@old' => count($existing_names)));
+		}
+		drupal_set_message($added.' '.$skipped);
 	}
+}
+
+function eve_recruitment_names_mail_form($form, &$form_state) {
+	global $user;
+	// Prepare a condition ignoring records locked by others.
+	$no_lock = db_or()
+		->condition('lock_time', REQUEST_TIME - 5 * 60, '<') // 5-minute lock
+		->condition('lock_time', NULL)
+		->condition('locked_by', $user->uid);
+	// Get a batch of 20 names to be mailed.
+	$names = db_select('eve_recruitment','r')
+		->fields('r', array('name'))
+		->condition('mailed_date', NULL)
+		->condition($no_lock)
+		->range(0, 20)
+		->execute()
+		->fetchCol();
+	// Lock the names to prevent parallel edits.
+	if (count($names) > 0) {
+		db_update('eve_recruitment')
+			->fields(array(
+				'locked_by' => $user->uid,
+				'lock_time' => REQUEST_TIME,
+			))
+			->condition('name', $names, 'IN')
+			->execute();
+		// Put the list in a comma-separated string with HTML markup.
+		$i = 0;
+		$mail_list = '';
+		foreach ($names as $name) {
+			if ($i == 0) {
+				$mail_list .= $name;
+			} else {
+				$mail_list .= ', ' . $name;
+			}
+			$i++;
+		}
+		$desc = t('Send the recruitment email to the distribution list below and click the Confirm button after it is done. 
+			These names are locked by you for 5 minutes to prevent other recruiters from sending duplicate mails.');
+		// Pass the names mailed to the form submission handler.
+		$form['names'] = array(
+			'#type' => 'hidden',
+			'#value' => $names,
+		);
+		$form['confirm_button'] = array(
+			'#name' => 'confirm',
+			'#type' => 'submit',
+			'#prefix' => '<p>'.$desc.'</p>'.'<p><strong>'.$mail_list.'</strong></p>',
+			'#value' => t('Confirm Sent Mail'),
+			'#submit' => array('eve_recruitment_names_mail_form_confirm'),
+		);
+		$form['release_button'] = array(
+			'#name' => 'release',
+			'#type' => 'submit',
+			'#prefix' => '&nbsp;',
+			'#value' => t('Release Lock'),
+			'#submit' => array('eve_recruitment_names_mail_form_release'),
+		);
+	} else {
+		$form['dummy'] = array(
+			'#type' => 'hidden',
+			'#value' => NULL,
+			'#prefix' => '<p>' . t('No new names are available for recruitment.') . '</p>',
+		);
+	}
+  return $form;
+}
+
+function eve_recruitment_names_mail_form_confirm($form, &$form_state) {
+	global $user;
+	$names = $form['names']['#value'];
+	$updated = db_update('eve_recruitment')
+		->fields(array(
+			'mailed_by' => $user->uid,
+			'mailed_date' => REQUEST_TIME,
+			'locked_by' => NULL,
+			'lock_time' => NULL,
+		))
+		->condition('name',$names,'IN')
+		->execute();
+	if ($updated) {
+		drupal_set_message(t('Updated @num_updated names.', 
+			array('@num_updated' => $updated)));
+	}
+	$form_state['redirect'] = 'recruitment/mailing/names/add';
+}
+
+function eve_recruitment_names_mail_form_release($form, &$form_state) {
+	global $user;
+	$names = $form['names']['#value'];
+	$updated = db_update('eve_recruitment')
+		->fields(array(
+			'locked_by' => NULL,
+			'lock_time' => NULL,
+		))
+		->condition('name',$names,'IN')
+		->condition('locked_by',$user->uid)
+		->execute();
+	if ($updated) {
+		drupal_set_message(t('Lock released from @updated names.', array('@updated' => $updated)));
+	}
+	$form_state['redirect'] = 'recruitment/mailing/names/add';
 }

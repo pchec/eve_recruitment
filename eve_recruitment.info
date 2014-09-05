@@ -2,3 +2,6 @@ name = EVE Recruitment
 description = Recruitment tool for EVE Online corporations.
 core = 7.x
 package = EVE Online
+dependencies[] = views
+files[] = eve_recruitment.module
+files[] = eve_recruitment.views.inc
