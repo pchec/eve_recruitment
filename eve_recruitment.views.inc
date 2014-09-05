@@ -50,7 +50,7 @@ function eve_recruitment_views_data() {
 	);
 	$date_handlers = array(
 		'field' => array(
-			'handler' => 'eve_api_views_handler_field_date',
+			'handler' => 'views_handler_field_date',
 			'click sortable' => TRUE,
 		),
 		'filter' => array('handler' => 'views_handler_filter_date'),
