@@ -32,11 +32,11 @@ function eve_recruitment_views_api() {
 function eve_recruitment_permission() {
 	return array(
 		'add new names' => array(
-			'title' => t('Add new entries'),
+			'title' => t('Add new names'),
 			'description' => t('Add new names to the recruitment database.'),
 		),
-		'confirm mailing' => array(
-			'title' => t('Confirm mailing'),
+		'confirm sent mails' => array(
+			'title' => t('Confirm sent mails'),
 			'description' => t('Confirm that recruitment mails have been sent for selected individuals.'),
 		),
 		'view statistics' => array(
@@ -187,10 +187,12 @@ function eve_recruitment_names_mail_form($form, &$form_state) {
 			'#submit' => array('eve_recruitment_names_mail_form_release'),
 		);
 	} else {
-		$form['dummy'] = array(
+		$add_names = t('<a href="@url">Add new names.</a>', array('@url' => url('recruitment/names/add')));
+		$add_names_link = user_access('add new names') ? ' ' . $add_names : '';
+		$form['no_data'] = array(
 			'#type' => 'hidden',
 			'#value' => NULL,
-			'#prefix' => '<p>' . t('No new names are available for recruitment.') . '</p>',
+			'#prefix' => '<p>' . t('No names available for recruitment.') . $add_names_link . '</p>',
 		);
 	}
   return $form;
@@ -212,7 +214,11 @@ function eve_recruitment_names_mail_form_confirm($form, &$form_state) {
 		drupal_set_message(t('Updated @num_updated names.', 
 			array('@num_updated' => $updated)));
 	}
-	$form_state['redirect'] = 'recruitment/summary';
+	if (user_access('view statistics')) {
+		$form_state['redirect'] = 'recruitment/summary';
+	} else {
+		$form_state['redirect'] = '<front>';
+	}
 }
 
 function eve_recruitment_names_mail_form_release($form, &$form_state) {
@@ -229,7 +235,11 @@ function eve_recruitment_names_mail_form_release($form, &$form_state) {
 	if ($updated) {
 		drupal_set_message(t('Lock released from @updated names.', array('@updated' => $updated)));
 	}
-	$form_state['redirect'] = 'recruitment/summary';
+	if (user_access('view statistics')) {
+		$form_state['redirect'] = 'recruitment/summary';
+	} else {
+		$form_state['redirect'] = '<front>';
+	}
 }
 
 function eve_recruitment_menu_local_tasks_alter(&$data, $router_item, $root_path) {
