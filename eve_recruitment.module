@@ -42,7 +42,7 @@ function eve_recruitment_schema() {
 			'name' => array(
 				'description' => 'Name of EVE Online character.',
 				'type' => 'varchar',
-				'length' => '64',
+				'length' => '24',
 				'not null' => TRUE,
 			),
 			'added_date' => array(
@@ -113,14 +113,14 @@ function eve_recruitment_schema() {
 
 function eve_recruitment_menu() {
   $items = array();
-  $items['recruitment/mailing/names/add'] = array(
+  $items['recruitment/names/add'] = array(
     'title' => t('Add Names'),
     'description' => t('Add names to the recruitment database.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('eve_recruitment_names_add_form'),
     'access callback' => TRUE
   );
-  $items['recruitment/mailing/names/mail'] = array(
+  $items['recruitment/names/mail'] = array(
     'title' => t('Send Mails'),
     'description' => t('Send mails to characters in the recruitment database.'),
     'page callback' => 'drupal_get_form',
@@ -137,14 +137,19 @@ function eve_recruitment_names_add_form($form, &$form_state) {
     '#type' => 'textarea',
     '#title' => t('Names to be added'),
 		'#prefix' => '<p>' . $desc . '</p>',
-    '#cols' => 30,
-    '#rows' => 20,
+    '#cols' => 25,
+    '#rows' => 10,
     '#required' => TRUE,
   );
   $form['submit_button'] = array(
     '#type' => 'submit',
     '#value' => t('Add Names'),
   );
+	$form['#attached']['css'][] = array(
+		'data' => '#edit-names {width: auto;} #edit-names + .grippie {display: none;}',
+		'type' => 'inline',
+	);
+	
   return $form;
 }
 
@@ -223,12 +228,19 @@ function eve_recruitment_names_mail_form($form, &$form_state) {
 		// Pass the names mailed to the form submission handler.
 		$form['names'] = array(
 			'#type' => 'hidden',
+			'#prefix' => '<p>'.$desc.'</p>',
 			'#value' => $names,
+		);
+		$form['name_display'] = array(
+			'#type' => 'textarea',
+			'#title' => t('Mailing List'),
+			'#value' => $mail_list,
+			'#rows' => 2,
+			'#disabled' => TRUE,
 		);
 		$form['confirm_button'] = array(
 			'#name' => 'confirm',
 			'#type' => 'submit',
-			'#prefix' => '<p>'.$desc.'</p>'.'<p><strong>'.$mail_list.'</strong></p>',
 			'#value' => t('Confirm Sent Mail'),
 			'#submit' => array('eve_recruitment_names_mail_form_confirm'),
 		);
@@ -288,20 +300,20 @@ function eve_recruitment_names_mail_form_release($form, &$form_state) {
 function eve_recruitment_menu_local_tasks_alter(&$data, $router_item, $root_path) {
   switch($root_path){
     case 'recruitment/summary':
-      $item = menu_get_item('recruitment/mailing/names/add');
-      $item['title'] = t('Add names');
+      $item = menu_get_item('recruitment/names/add');
+      $item['title'] = t('Add Names');
       $data['actions']['output'][] = array(
         '#theme' => 'menu_local_action',
         '#link' => $item,
       );
-      $item = menu_get_item('recruitment/mailing/names/mail');
-      $item['title'] = t('Get names');
+      $item = menu_get_item('recruitment/names/mail');
+      $item['title'] = t('Send Mails');
       $data['actions']['output'][] = array(
         '#theme' => 'menu_local_action',
         '#link' => $item,
       );
 			break;
-		case 'recruitment/mailing/names/add':
+		case 'recruitment/names/add':
       $item = menu_get_item('recruitment/summary');
       $item['title'] = t('Summary');
       $data['actions']['output'][] = array(
