@@ -60,7 +60,7 @@ function eve_recruitment_menu() {
     'description' => t('Send mails to characters in the recruitment database.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('eve_recruitment_names_mail_form'),
-    'access arguments' => array('confirm mailing'),
+    'access arguments' => array('confirm sent mails'),
   );
   return $items;
 }
