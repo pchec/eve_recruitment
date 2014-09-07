@@ -20,7 +20,7 @@
  * `-------- Major Version Change.
  */
 function eve_recruitment_version() {
-  return '1.0.0.0';
+  return '1.0.1.0';
 }
 
 function eve_recruitment_views_api() {
@@ -111,6 +111,23 @@ function eve_recruitment_schema() {
 	return $schema;
 }
 
+function eve_recruitment_permission() {
+	return array(
+		'add new names' => array(
+			'title' => t('Add new entries'),
+			'description' => t('Add new names to the recruitment database.'),
+		),
+		'confirm mailing' => array(
+			'title' => t('Confirm mailing'),
+			'description' => t('Confirm that recruitment mails have been sent for selected individuals.'),
+		),
+		'view statistics' => array(
+			'title' => t('View statistics'),
+			'description' => t('View recruitment statistics.'),
+		),
+	);
+}
+
 function eve_recruitment_menu() {
   $items = array();
   $items['recruitment/names/add'] = array(
@@ -118,14 +135,14 @@ function eve_recruitment_menu() {
     'description' => t('Add names to the recruitment database.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('eve_recruitment_names_add_form'),
-    'access callback' => TRUE
+    'access arguments' => array('add new names'),
   );
   $items['recruitment/names/mail'] = array(
     'title' => t('Send Mails'),
     'description' => t('Send mails to characters in the recruitment database.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('eve_recruitment_names_mail_form'),
-    'access callback' => TRUE
+    'access arguments' => array('confirm mailing'),
   );
   return $items;
 }
