@@ -1,0 +1,87 @@
+<?php
+/**
+ * @file
+ * Installation file for EVE Recruitment module.
+ */
+
+function eve_recruitment_schema() {
+	$schema['eve_recruitment'] = array(
+		'description' => 'Stores names of people to be recruited and dates of recruitment letters.',
+		'fields' => array(
+			'ref_id' => array(
+				'description' => 'Unique ID of the entry.',
+				'type' => 'serial',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
+			),
+			'name' => array(
+				'description' => 'Name of EVE Online character.',
+				'type' => 'varchar',
+				'length' => '24',
+				'not null' => TRUE,
+			),
+			'added_date' => array(
+				'description' => 'Date and time when the name was added.',
+				'type' => 'int',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
+			),
+			'added_by' => array(
+				'description' => 'User ID of the person who added the name.',
+				'type' => 'int',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
+			),
+			'mailed_date' => array(
+				'description' => 'Date and time when the character was mailed.',
+				'type' => 'int',
+				'unsigned' => TRUE,
+				'not null' => FALSE,
+			),
+			'mailed_by' => array(
+				'description' => 'User ID of the person who mailed the character.',
+				'type' => 'int',
+				'unsigned' => TRUE,
+				'not null' => FALSE,
+			),
+			'lock_time' => array(
+				'description' => 'Temporary lock time of the record to prevent edit conflicts.',
+				'type' => 'int',
+				'unsigned' => TRUE,
+				'not null' => FALSE,
+			),
+			'locked_by' => array(
+				'description' => 'User ID of the person who locked the record.',
+				'type' => 'int',
+				'unsigned' => TRUE,
+				'not null' => FALSE,
+			),
+			'imported' => array(
+				'description' => 'Name originally added by another person to another database and imported from it.',
+				'type' => 'int',
+				'size' => 'tiny',
+				'unsigned' => TRUE,
+				'not null' => FALSE,
+			),
+		),
+		'primary key' => array('ref_id'),
+		'foreign keys' => array(
+	    'added_by' => array(
+				'table' => 'users',
+				'columns' => array('added_by' => 'uid'),
+			),
+	    'mailed_by' => array(
+				'table' => 'users',
+				'columns' => array('mailed_by' => 'uid'),
+			),
+    ),
+		'indexes' => array(
+			'name' => array('name'),
+			'added_by' => array('added_by'),
+			'mailed_by' => array('mailed_by'),
+			'locked_by' => array('locked_by'),
+			'lock_time' => array('lock_time'),
+		),
+	);
+	return $schema;
+}
