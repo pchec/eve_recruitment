@@ -170,7 +170,7 @@ function eve_recruitment_names_mail_form($form, &$form_state) {
 			'#type' => 'textarea',
 			'#title' => t('Mailing List'),
 			'#value' => $mail_list,
-			'#rows' => 2,
+			'#rows' => 3,
 			'#disabled' => TRUE,
 		);
 		$form['confirm_button'] = array(
