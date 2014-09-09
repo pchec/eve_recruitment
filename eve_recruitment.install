@@ -17,7 +17,7 @@ function eve_recruitment_schema() {
 			'name' => array(
 				'description' => 'Name of EVE Online character.',
 				'type' => 'varchar',
-				'length' => '24',
+				'length' => '64',
 				'not null' => TRUE,
 			),
 			'added_date' => array(
