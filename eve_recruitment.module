@@ -90,8 +90,7 @@ function eve_recruitment_names_add_form($form, &$form_state) {
 
 function eve_recruitment_names_add_form_submit($form, &$form_state) {
 	global $user;
-	// Sanitize the input.
-	$name_list = check_plain($form['names']['#value']);
+	$name_list = $form['names']['#value'];
 	// Split lines or text entries separated by commas into array elements.
 	$names = preg_split("/[\r\n,]+/", $name_list, -1, PREG_SPLIT_NO_EMPTY);
 	// Remove duplicates.
