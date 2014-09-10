@@ -74,10 +74,60 @@ function eve_recruitment_views_default_views() {
 	$handler->display->display_options['fields']['name_1']['group_type'] = 'count';
 	$handler->display->display_options['fields']['name_1']['label'] = 'Names Contributed';
 	$handler->display->display_options['fields']['name_1']['separator'] = ' ';
+	/* Field: COUNT(Recruitment: Date Added) */
+	$handler->display->display_options['fields']['added_date']['id'] = 'added_date';
+	$handler->display->display_options['fields']['added_date']['table'] = 'eve_recruitment';
+	$handler->display->display_options['fields']['added_date']['field'] = 'added_date';
+	$handler->display->display_options['fields']['added_date']['group_type'] = 'count';
+	/* Filter criterion: Recruitment: Imported */
+	$handler->display->display_options['filters']['imported']['id'] = 'imported';
+	$handler->display->display_options['filters']['imported']['table'] = 'eve_recruitment';
+	$handler->display->display_options['filters']['imported']['field'] = 'imported';
+	$handler->display->display_options['filters']['imported']['value'] = '0';
 
 	/* Display: Recruitment Summary */
 	$handler = $view->new_display('page', 'Recruitment Summary', 'recruitment_summary');
+	$handler->display->display_options['defaults']['style_plugin'] = FALSE;
+	$handler->display->display_options['style_plugin'] = 'table';
+	$handler->display->display_options['style_options']['columns'] = array(
+		'name' => 'name',
+		'added_date' => 'added_date',
+	);
+	$handler->display->display_options['style_options']['default'] = 'added_date';
+	$handler->display->display_options['style_options']['info'] = array(
+		'name' => array(
+			'sortable' => 1,
+			'default_sort_order' => 'asc',
+			'align' => '',
+			'separator' => '',
+			'empty_column' => 0,
+		),
+		'added_date' => array(
+			'sortable' => 1,
+			'default_sort_order' => 'desc',
+			'align' => 'views-align-right',
+			'separator' => '',
+			'empty_column' => 0,
+		),
+	);
+	$handler->display->display_options['defaults']['style_options'] = FALSE;
+	$handler->display->display_options['defaults']['row_plugin'] = FALSE;
+	$handler->display->display_options['defaults']['row_options'] = FALSE;
 	$handler->display->display_options['defaults']['header'] = FALSE;
+	$handler->display->display_options['defaults']['fields'] = FALSE;
+	/* Field: User: Name */
+	$handler->display->display_options['fields']['name']['id'] = 'name';
+	$handler->display->display_options['fields']['name']['table'] = 'users';
+	$handler->display->display_options['fields']['name']['field'] = 'name';
+	$handler->display->display_options['fields']['name']['relationship'] = 'added_by';
+	$handler->display->display_options['fields']['name']['label'] = 'Recruiter Name';
+	/* Field: COUNT(Recruitment: Date Added) */
+	$handler->display->display_options['fields']['added_date']['id'] = 'added_date';
+	$handler->display->display_options['fields']['added_date']['table'] = 'eve_recruitment';
+	$handler->display->display_options['fields']['added_date']['field'] = 'added_date';
+	$handler->display->display_options['fields']['added_date']['group_type'] = 'count';
+	$handler->display->display_options['fields']['added_date']['label'] = 'Names Contributed';
+	$handler->display->display_options['fields']['added_date']['separator'] = '';
 	$handler->display->display_options['path'] = 'recruitment/summary';
 
 	/* Display: Mailing Summary */
@@ -85,6 +135,32 @@ function eve_recruitment_views_default_views() {
 	$handler->display->display_options['defaults']['title'] = FALSE;
 	$handler->display->display_options['pager']['type'] = 'none';
 	$handler->display->display_options['pager']['options']['offset'] = '0';
+	$handler->display->display_options['defaults']['style_plugin'] = FALSE;
+	$handler->display->display_options['style_plugin'] = 'table';
+	$handler->display->display_options['style_options']['columns'] = array(
+		'name' => 'name',
+		'mailed_date' => 'mailed_date',
+	);
+	$handler->display->display_options['style_options']['default'] = 'mailed_date';
+	$handler->display->display_options['style_options']['info'] = array(
+		'name' => array(
+			'sortable' => 1,
+			'default_sort_order' => 'asc',
+			'align' => '',
+			'separator' => '',
+			'empty_column' => 0,
+		),
+		'mailed_date' => array(
+			'sortable' => 1,
+			'default_sort_order' => 'desc',
+			'align' => 'views-align-right',
+			'separator' => '',
+			'empty_column' => 0,
+		),
+	);
+	$handler->display->display_options['defaults']['style_options'] = FALSE;
+	$handler->display->display_options['defaults']['row_plugin'] = FALSE;
+	$handler->display->display_options['defaults']['row_options'] = FALSE;
 	$handler->display->display_options['defaults']['fields'] = FALSE;
 	/* Field: User: Name */
 	$handler->display->display_options['fields']['name']['id'] = 'name';
@@ -92,50 +168,90 @@ function eve_recruitment_views_default_views() {
 	$handler->display->display_options['fields']['name']['field'] = 'name';
 	$handler->display->display_options['fields']['name']['relationship'] = 'mailed_by';
 	$handler->display->display_options['fields']['name']['label'] = 'Recruiter Name';
-	/* Field: COUNT(User: Name) */
-	$handler->display->display_options['fields']['name_1']['id'] = 'name_1';
-	$handler->display->display_options['fields']['name_1']['table'] = 'users';
-	$handler->display->display_options['fields']['name_1']['field'] = 'name';
-	$handler->display->display_options['fields']['name_1']['relationship'] = 'mailed_by';
-	$handler->display->display_options['fields']['name_1']['group_type'] = 'count';
-	$handler->display->display_options['fields']['name_1']['label'] = 'People Mailed';
-	$handler->display->display_options['fields']['name_1']['separator'] = ' ';
+	/* Field: COUNT(Recruitment: Date Mailed) */
+	$handler->display->display_options['fields']['mailed_date']['id'] = 'mailed_date';
+	$handler->display->display_options['fields']['mailed_date']['table'] = 'eve_recruitment';
+	$handler->display->display_options['fields']['mailed_date']['field'] = 'mailed_date';
+	$handler->display->display_options['fields']['mailed_date']['group_type'] = 'count';
+	$handler->display->display_options['fields']['mailed_date']['label'] = 'Characters Mailed';
+	$handler->display->display_options['fields']['mailed_date']['separator'] = ' ';
 	$handler->display->display_options['defaults']['filter_groups'] = FALSE;
 	$handler->display->display_options['defaults']['filters'] = FALSE;
-	/* Filter criterion: User: The user ID */
-	$handler->display->display_options['filters']['uid_raw']['id'] = 'uid_raw';
-	$handler->display->display_options['filters']['uid_raw']['table'] = 'users';
-	$handler->display->display_options['filters']['uid_raw']['field'] = 'uid_raw';
-	$handler->display->display_options['filters']['uid_raw']['relationship'] = 'mailed_by';
-	$handler->display->display_options['filters']['uid_raw']['operator'] = 'not empty';
+	/* Filter criterion: Recruitment: Date Mailed */
+	$handler->display->display_options['filters']['mailed_date']['id'] = 'mailed_date';
+	$handler->display->display_options['filters']['mailed_date']['table'] = 'eve_recruitment';
+	$handler->display->display_options['filters']['mailed_date']['field'] = 'mailed_date';
+	$handler->display->display_options['filters']['mailed_date']['operator'] = 'not empty';
+	/* Filter criterion: Recruitment: Imported */
+	$handler->display->display_options['filters']['imported']['id'] = 'imported';
+	$handler->display->display_options['filters']['imported']['table'] = 'eve_recruitment';
+	$handler->display->display_options['filters']['imported']['field'] = 'imported';
+	$handler->display->display_options['filters']['imported']['value'] = '0';
 	$handler->display->display_options['displays'] = array(
 		'recruitment_summary' => 'recruitment_summary',
 		'default' => 0,
 	);
 	$handler->display->display_options['attachment_position'] = 'after';
-	$translatables['recruitment_statistics'] = array(
-		t('Master'),
-		t('Recruitment Summary'),
-		t('more'),
-		t('Apply'),
-		t('Reset'),
-		t('Sort by'),
-		t('Asc'),
-		t('Desc'),
-		t('Items per page'),
-		t('- All -'),
-		t('Offset'),
-		t('« first'),
-		t('‹ previous'),
-		t('next ›'),
-		t('last »'),
-		t('Added By'),
-		t('Mailed By'),
-		t('Recruiter Name'),
-		t('Names Contributed'),
-		t('Mailing Summary'),
-		t('People Mailed'),
+
+	/* Display: Import Summary */
+	$handler = $view->new_display('attachment', 'Import Summary', 'attachment_1');
+	$handler->display->display_options['defaults']['title'] = FALSE;
+	$handler->display->display_options['title'] = 'Imported from the Previous Tool';
+	$handler->display->display_options['pager']['type'] = 'some';
+	$handler->display->display_options['defaults']['style_plugin'] = FALSE;
+	$handler->display->display_options['style_plugin'] = 'table';
+	$handler->display->display_options['style_options']['columns'] = array(
+		'name' => 'name',
+		'added_date' => 'added_date',
 	);
+	$handler->display->display_options['style_options']['default'] = 'added_date';
+	$handler->display->display_options['style_options']['info'] = array(
+		'name' => array(
+			'sortable' => 1,
+			'default_sort_order' => 'asc',
+			'align' => '',
+			'separator' => '',
+			'empty_column' => 0,
+		),
+		'added_date' => array(
+			'sortable' => 1,
+			'default_sort_order' => 'desc',
+			'align' => 'views-align-right',
+			'separator' => '',
+			'empty_column' => 0,
+		),
+	);
+	$handler->display->display_options['defaults']['style_options'] = FALSE;
+	$handler->display->display_options['defaults']['row_plugin'] = FALSE;
+	$handler->display->display_options['defaults']['row_options'] = FALSE;
+	$handler->display->display_options['defaults']['fields'] = FALSE;
+	/* Field: User: Name */
+	$handler->display->display_options['fields']['name']['id'] = 'name';
+	$handler->display->display_options['fields']['name']['table'] = 'users';
+	$handler->display->display_options['fields']['name']['field'] = 'name';
+	$handler->display->display_options['fields']['name']['relationship'] = 'added_by';
+	$handler->display->display_options['fields']['name']['label'] = 'Recruiter Name';
+	$handler->display->display_options['fields']['name']['alter']['alter_text'] = TRUE;
+	$handler->display->display_options['fields']['name']['alter']['text'] = 'The Recruitment Team';
+	/* Field: COUNT(Recruitment: Date Added) */
+	$handler->display->display_options['fields']['added_date']['id'] = 'added_date';
+	$handler->display->display_options['fields']['added_date']['table'] = 'eve_recruitment';
+	$handler->display->display_options['fields']['added_date']['field'] = 'added_date';
+	$handler->display->display_options['fields']['added_date']['group_type'] = 'count';
+	$handler->display->display_options['fields']['added_date']['label'] = 'Names Imported';
+	$handler->display->display_options['fields']['added_date']['separator'] = ' ';
+	$handler->display->display_options['defaults']['filter_groups'] = FALSE;
+	$handler->display->display_options['defaults']['filters'] = FALSE;
+	/* Filter criterion: Recruitment: Imported */
+	$handler->display->display_options['filters']['imported']['id'] = 'imported';
+	$handler->display->display_options['filters']['imported']['table'] = 'eve_recruitment';
+	$handler->display->display_options['filters']['imported']['field'] = 'imported';
+	$handler->display->display_options['filters']['imported']['value'] = '1';
+	$handler->display->display_options['displays'] = array(
+		'recruitment_summary' => 'recruitment_summary',
+		'default' => 0,
+	);
+	$handler->display->display_options['attachment_position'] = 'after';
 	$views[$view->name] = $view;
 	return $views;
 }
