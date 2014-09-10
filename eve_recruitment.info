@@ -3,5 +3,6 @@ description = Recruitment tool for EVE Online corporations.
 core = 7.x
 package = EVE Online
 dependencies[] = views
+dependencies[] = eve_api
 files[] = eve_recruitment.module
 files[] = eve_recruitment.views.inc

@@ -20,7 +20,7 @@
  * `-------- Major Version Change.
  */
 function eve_recruitment_version() {
-  return '1.0.1.0';
+  return '1.0.2.1';
 }
 
 function eve_recruitment_views_api() {
@@ -86,6 +86,15 @@ function eve_recruitment_names_add_form($form, &$form_state) {
 	);
 	
   return $form;
+}
+
+function eve_recruitment_names_add_form_validate($form, &$form_state) {
+	$names = (string) $form['names']['#value'];
+  if (!preg_match("/^[a-z0-9 '\r\n,]+$/i", $names)) {
+    form_set_error('names', t('Character names may only contain the characters A-Z, a-z, 0-9, quotation or space.
+			The names can be separated by new lines or commas.'));
+  }
+	return;
 }
 
 function eve_recruitment_names_add_form_submit($form, &$form_state) {
@@ -169,7 +178,7 @@ function eve_recruitment_names_mail_form($form, &$form_state) {
 			'#type' => 'textarea',
 			'#title' => t('Mailing List'),
 			'#value' => $mail_list,
-			'#rows' => 3,
+			'#rows' => 4,
 			'#disabled' => TRUE,
 		);
 		$form['confirm_button'] = array(
@@ -209,15 +218,48 @@ function eve_recruitment_names_mail_form_confirm($form, &$form_state) {
 		))
 		->condition('name',$names,'IN')
 		->execute();
+
+	// Obtain character IDs from EVE API
+	$query = array('names' => preg_replace("/,([\s])+/",",",$form['name_display']['#value']));
+	$ids_retrieved = eve_recruitment_get_character_id($query);
+	
+	// Set info messages
 	if ($updated) {
-		drupal_set_message(t('Updated @num_updated names.', 
-			array('@num_updated' => $updated)));
+		$message = t('Updated @num_updated names.', 
+			array('@num_updated' => $updated));
+		if ($ids_retrieved) {
+			$message .= ' ' . t('Obtained @ids character IDs from EVE API.', 
+				array('@ids' => $ids_retrieved));
+		}		
+		drupal_set_message($message);
 	}
+	// Redirect the user depending on permissions
 	if (user_access('view statistics')) {
 		$form_state['redirect'] = 'recruitment/summary';
 	} else {
 		$form_state['redirect'] = '<front>';
 	}
+}
+
+function eve_recruitment_get_character_id($query) {
+	// Check if eve_api module is enabled.
+	if (!module_exists('eve_api')) {
+		return 0;
+	}
+	$result = eve_api_get_character_id_api($query);
+	$ids = 0;
+	if (!isset($result['error'])) {
+		foreach ($result as $name) {
+			if (isset($name['characterID']) && isset($name['name'])) {
+				$i = db_update('eve_recruitment')
+					->fields(array('character_id' => $name['characterID']))
+				->condition('name', $name['name'])
+				->execute();
+				$ids = $ids + $i;
+			}
+		}
+	}
+	return $ids;
 }
 
 function eve_recruitment_names_mail_form_release($form, &$form_state) {

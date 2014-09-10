@@ -63,6 +63,12 @@ function eve_recruitment_schema() {
 				'unsigned' => TRUE,
 				'not null' => FALSE,
 			),
+			'character_id' => array(
+				'description' => 'ID of the EVE Online character.',
+				'type' => 'int',
+				'unsigned' => TRUE,
+				'not null' => FALSE,
+			),
 		),
 		'primary key' => array('ref_id'),
 		'foreign keys' => array(
@@ -84,4 +90,17 @@ function eve_recruitment_schema() {
 		),
 	);
 	return $schema;
+}
+
+/**
+* Added support for character IDs obtained from EVE API.
+*/
+function eve_recruitment_update_7100(&$sandbox) {
+	db_add_field('eve_recruitment', 'character_id', array(
+		'description' => 'ID of the EVE Online character.',
+		'type' => 'int',
+		'unsigned' => TRUE,
+		'not null' => FALSE,
+	));
+	return;
 }
