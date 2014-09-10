@@ -124,5 +124,11 @@ function eve_recruitment_views_data() {
 		),
 	);
 
+	$field_data = array(
+		'title' => t('Imported'),
+		'help' => t('Indicates that the record is imported from external source. The person importing it is not the original contributor.'),
+	);
+	$data['eve_recruitment']['imported'] = array_merge($bool_handlers, $field_data);
+
 	return $data;
 }
