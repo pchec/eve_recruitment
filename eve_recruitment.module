@@ -162,7 +162,7 @@ function eve_recruitment_names_mail_form($form, &$form_state) {
 			if ($i == 0) {
 				$mail_list .= $name;
 			} else {
-				$mail_list .= ', ' . $name;
+				$mail_list .= ',' . $name;
 			}
 			$i++;
 		}
