@@ -20,7 +20,7 @@
  * `-------- Major Version Change.
  */
 function eve_recruitment_version() {
-  return '1.0.2.1';
+  return '1.0.2.2';
 }
 
 function eve_recruitment_views_api() {
@@ -235,7 +235,7 @@ function eve_recruitment_names_mail_form_confirm($form, &$form_state) {
 	}
 	// Redirect the user depending on permissions
 	if (user_access('view statistics')) {
-		$form_state['redirect'] = 'recruitment/summary';
+		$form_state['redirect'] = 'recruitment/summary/weekly';
 	} else {
 		$form_state['redirect'] = '<front>';
 	}
@@ -277,7 +277,7 @@ function eve_recruitment_names_mail_form_release($form, &$form_state) {
 		drupal_set_message(t('Lock released from @updated names.', array('@updated' => $updated)));
 	}
 	if (user_access('view statistics')) {
-		$form_state['redirect'] = 'recruitment/summary';
+		$form_state['redirect'] = 'recruitment/summary/weekly';
 	} else {
 		$form_state['redirect'] = '<front>';
 	}
@@ -285,7 +285,7 @@ function eve_recruitment_names_mail_form_release($form, &$form_state) {
 
 function eve_recruitment_menu_local_tasks_alter(&$data, $router_item, $root_path) {
   switch($root_path){
-    case 'recruitment/summary':
+    case 'recruitment/summary/weekly':
       $item = menu_get_item('recruitment/names/add');
       $item['title'] = t('Add Names');
       $data['actions']['output'][] = array(
@@ -300,8 +300,8 @@ function eve_recruitment_menu_local_tasks_alter(&$data, $router_item, $root_path
       );
 			break;
 		case 'recruitment/names/add':
-      $item = menu_get_item('recruitment/summary');
-      $item['title'] = t('Summary');
+      $item = menu_get_item('recruitment/summary/weekly');
+      $item['title'] = t('Weekly Recruitment Summary');
       $data['actions']['output'][] = array(
         '#theme' => 'menu_local_action',
         '#link' => $item,
